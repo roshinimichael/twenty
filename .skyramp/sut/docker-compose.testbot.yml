@@ -1,0 +1,35 @@
+# SUT compose for Skyramp Testbot.
+# Builds the twenty-app-dev all-in-one image from PR source (PostgreSQL + Redis + server + worker + frontend bundled).
+# Run with: docker compose -f .skyramp/sut/docker-compose.testbot.yml --project-directory . up -d --build
+
+name: twenty-testbot
+
+services:
+  twenty:
+    build:
+      context: .
+      dockerfile: packages/twenty-docker/twenty/Dockerfile
+      target: twenty-app-dev
+    ports:
+      - "3000:2020"
+    environment:
+      # Override SERVER_URL so the frontend knows the external host:port
+      SERVER_URL: http://localhost:3000
+      APP_SECRET: testbot-app-secret-not-for-prod
+      # Inherited from Dockerfile ENV: SIGN_IN_PREFILLED=true, STORAGE_TYPE=local,
+      # PG_DATABASE_URL (local postgres), REDIS_URL (local redis),
+      # DISABLE_DB_MIGRATIONS=true (s6-overlay init-db.sh handles migrations),
+      # DISABLE_CRON_JOBS_REGISTRATION=true (worker handles crons)
+    volumes:
+      - twenty-testbot-postgres:/data/postgres
+      - twenty-testbot-storage:/app/packages/twenty-server/.local-storage
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:2020/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 60
+      start_period: 180s
+
+volumes:
+  twenty-testbot-postgres:
+  twenty-testbot-storage:

@@ -1,0 +1,37 @@
+# Skyramp Workspace Configuration
+workspace:
+  repoName: roshinimichael/twenty
+  repoUrl: https://github.com/roshinimichael/twenty
+metadata:
+  schemaVersion: v1
+  executorVersion: v1.3.30
+  createdAt: "2026-06-29T17:41:20.953Z"
+  updatedAt: "2026-06-29T17:41:20.960Z"
+services:
+  - serviceName: twenty-server
+    language: typescript
+    framework: playwright
+    testDirectory: packages/twenty-e2e-testing/tests
+    api:
+      authType: bearer
+      authHeader: Authorization
+      authScheme: Bearer
+      baseUrl: http://localhost:3000
+    runtimeDetails:
+      serverStartCommand: docker compose -f .skyramp/sut/docker-compose.testbot.yml --project-directory . up -d --build
+      serverStopCommand: docker compose -f .skyramp/sut/docker-compose.testbot.yml --project-directory . down -v
+      runtime: docker
+      dockerNetwork: twenty_default
+  - serviceName: twenty-front
+    language: typescript
+    framework: playwright
+    testDirectory: packages/twenty-e2e-testing/tests
+    api:
+      authType: none
+      authHeader: ""
+      baseUrl: http://localhost:3000
+    runtimeDetails:
+      serverStartCommand: docker compose -f .skyramp/sut/docker-compose.testbot.yml --project-directory . up -d --build
+      serverStopCommand: docker compose -f .skyramp/sut/docker-compose.testbot.yml --project-directory . down -v
+      runtime: docker
+      dockerNetwork: twenty_default
